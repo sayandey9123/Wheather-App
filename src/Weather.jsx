@@ -12,34 +12,42 @@ const Weather = () => {
     const [weatherClass, setWeatherClass] = useState("app");
 
     useEffect(() => {
-        if (typeof weather.main !== "undefined") {
-            const temp = weather.main.temp;
-            const condition = weather.weather[0]?.main?.toLowerCase(); // ✅ Ensure safe access
+  if (weather?.main && Array.isArray(weather.weather)) {
+    const temp = weather.main.temp;
+    const condition = weather.weather[0]?.main?.toLowerCase() || "";
 
-            console.log("Weather Condition:", condition);
-            console.log("Temperature:", temp);
+    let newClass = "app";
 
-            if (temp < 14) setWeatherClass("app cold");
-            else if (condition?.includes("clear")) setWeatherClass("app sunny");
-            else if (condition?.includes("cloud")) setWeatherClass("app cloudy");
-            else if (condition?.includes("rain") || condition?.includes("drizzle")) setWeatherClass("app rainy");
-            else if (condition?.includes("wind")) setWeatherClass("app windy");
-            else if (condition?.includes("haze") || condition?.includes("mist") || condition?.includes("smoke")) setWeatherClass("app hazy");
-            else setWeatherClass("app");
-        }
-    }, [weather]);
+    if (temp < 14) newClass += " cold";
+    if (condition.includes("clear")) newClass += " sunny";
+    if (condition.includes("cloud")) newClass += " cloudy";
+    if (condition.includes("rain") || condition.includes("drizzle")) newClass += " rainy";
+    if (condition.includes("snow")) newClass += " snowy";
+    if (condition.includes("thunderstorm")) newClass += " stormy";
+    if (condition.includes("wind")) newClass += " windy";
+    if (condition.includes("haze") || condition.includes("mist") || condition.includes("smoke")) newClass += " hazy";
 
-    const search = (evt) => {
-        if (evt.key === "Enter") {
-            fetch(`${api.base}weather?q=${query}&units=metric&APPID=${api.key}`)
-                .then((res) => res.json())
-                .then((result) => {
+    setWeatherClass(newClass);
+  }
+}, [weather]);
+
+
+   const search = (evt) => {
+    if (evt.key === "Enter") {
+        fetch(`${api.base}weather?q=${query}&units=metric&APPID=${api.key}`)
+            .then((res) => res.json())
+            .then((result) => {
+                if (result.cod === 200) {
                     setWeather(result);
                     setQuery('');
-                })
-               
-        }
-    };
+                } else {
+                    alert("City not found or weather data unavailable");
+                    setQuery('');
+                }
+            });
+    }
+};
+
 
     const dateBuilder = (d) => {
         let months = [
